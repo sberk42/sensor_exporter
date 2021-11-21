@@ -20,7 +20,9 @@ package main
  */
 
 import (
+	"encoding/json"
 	"flag"
+	"io/ioutil"
 	"net/http"
 
 	"github.com/prometheus/client_golang/prometheus"
@@ -30,17 +32,33 @@ import (
 )
 
 var (
-	flagTest = flag.Bool("test", false, "print all available metrics to stdout")
-
-	flagAddr = flag.String("listen-address", "127.0.0.1:9043", "The address to listen on for HTTP requests.")
+	flagConfigFile = flag.String("config-file", "sensor_exporter.json", "The JSON file with the metric definitions.")
+	flagAddr       = flag.String("listen-address", "127.0.0.1:9043", "The address to listen on for HTTP requests.")
+	flagLogLevel   = flag.String("log-level", "info", "The log level {trace|debug|info|warn|error}")
 )
 
 var metricDescs map[sensors.MeasurementType]*prometheus.Desc
 var metricTypes map[sensors.MeasurementType]prometheus.ValueType
+var metricLabels []string
+var configLabelIndex map[string]int
 
 type SensorCollector struct {
 	sensorDevice sensors.SensorDevice
 }
+
+// Config to add constant labels to
+type sensorConfig struct {
+	DeviceType   string            `json:"deviceType"`
+	DeviceId     string            `json:"deviceId"`
+	DeviceVendor string            `json:"deviceVendor"`
+	DeviceName   string            `json:"deviceName"`
+	SensorModel  string            `json:"sensorModel"`
+	SensorId     string            `json:"sensorId"`
+	Labels       map[string]string `json:"labels"`
+	idFields     []string
+}
+
+var sensorConfigs []sensorConfig
 
 // Implement prometheus Collector
 func (fc *SensorCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -49,21 +67,49 @@ func (fc *SensorCollector) Describe(ch chan<- *prometheus.Desc) {
 	}
 }
 
+func labelsMatchConfig(sc *sensorConfig, labels []string) bool {
+	for i, l := range sc.idFields {
+		if l != "" && l != labels[i] {
+			return false
+		}
+	}
+
+	return true
+}
+
+func createMeasurementLabels(dev sensors.SensorDevice, m *sensors.Measurement) []string {
+	// create static labels from device and measurement
+	labels := make([]string, len(metricLabels))
+	labels[0] = dev.DeviceType()
+	labels[1] = dev.DeviceId()
+	labels[2] = dev.DeviceVendor()
+	labels[3] = dev.DeviceName()
+	labels[4] = m.SensorModel
+	labels[5] = m.SensorId
+
+	// get labels from config
+	for _, sc := range sensorConfigs {
+		if labelsMatchConfig(&sc, labels) {
+			// add static labels
+			for l, v := range sc.Labels {
+				labels[configLabelIndex[l]] = v
+			}
+
+			break
+		}
+	}
+
+	return labels
+}
+
 func (sc *SensorCollector) Collect(ch chan<- prometheus.Metric) {
 	ms := sc.sensorDevice.GetMeasurements()
-
-	labels := make([]string, 6)
-	labels[0] = sc.sensorDevice.DeviceType()
-	labels[1] = sc.sensorDevice.DeviceId()
-	labels[2] = sc.sensorDevice.DeviceVendor()
-	labels[3] = sc.sensorDevice.DeviceName()
 
 	for _, m := range ms {
 		md := metricDescs[m.Type]
 		vt := metricTypes[m.Type]
 
-		labels[4] = m.SensorModel
-		labels[5] = m.SensorId
+		labels := createMeasurementLabels(sc.sensorDevice, &m)
 
 		metric, err := prometheus.NewConstMetric(md, vt, m.Value, labels...)
 		if err != nil {
@@ -71,8 +117,17 @@ func (sc *SensorCollector) Collect(ch chan<- prometheus.Metric) {
 		} else {
 			ch <- metric
 		}
-
 	}
+}
+
+func indexOf(slice []string, item string) int {
+	for i, s := range slice {
+		if s == item {
+			return i
+		}
+	}
+
+	return -1
 }
 
 func createMetricsDescs() {
@@ -80,12 +135,29 @@ func createMetricsDescs() {
 
 	metricDescs = make(map[sensors.MeasurementType]*prometheus.Desc, len(mtypes))
 	metricTypes = make(map[sensors.MeasurementType]prometheus.ValueType, len(mtypes))
-	labels := []string{"device_type", "device_id", "device_vendor", "device_name", "sensor_model", "sensor_id"}
+	configLabelIndex = make(map[string]int)
+
+	metricLabels = []string{"device_type", "device_id", "device_vendor", "device_name", "sensor_model", "sensor_id"}
+
+	// append constant labels from config and fill idFields
+	for _, sc := range sensorConfigs {
+		sc.idFields = []string{sc.DeviceType, sc.DeviceId, sc.DeviceVendor, sc.DeviceName, sc.SensorModel, sc.SensorId}
+
+		for lbl, _ := range sc.Labels {
+			if indexOf(metricLabels, lbl) == -1 {
+				configLabelIndex[lbl] = len(metricLabels)
+				metricLabels = append(metricLabels, lbl)
+			}
+		}
+	}
+
+	log.Debugf("metric labels: %v", metricLabels)
+	log.Debugf("configLabelIndex: %v", configLabelIndex)
 
 	for _, mt := range mtypes {
 		mDetails := sensors.GetMeasurementTypeDetails(mt)
 
-		metricDescs[mt] = prometheus.NewDesc("sensor_measurement_"+mDetails.MetricName, mDetails.MetricHelp, labels, nil)
+		metricDescs[mt] = prometheus.NewDesc("sensor_measurement_"+mDetails.MetricName, mDetails.MetricHelp, metricLabels, nil)
 
 		var vt prometheus.ValueType
 
@@ -101,15 +173,25 @@ func createMetricsDescs() {
 	}
 }
 
-func test() {
-}
-
 func main() {
 	flag.Parse()
 
-	if *flagTest {
-		test()
-		return
+	logLevel, err := log.ParseLevel(*flagLogLevel)
+	if err != nil {
+		log.Errorf("error parsing log level:", err)
+	} else {
+		log.SetLevel(logLevel)
+	}
+
+	// read metrics
+	jsonData, err := ioutil.ReadFile(*flagConfigFile)
+	if err != nil {
+		log.Fatalf("error reading config file:", err)
+	}
+
+	err = json.Unmarshal(jsonData, &sensorConfigs)
+	if err != nil {
+		log.Fatalf("error parsing JSON:", err)
 	}
 
 	createMetricsDescs()

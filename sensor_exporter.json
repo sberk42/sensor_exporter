@@ -1,0 +1,6 @@
+[
+    {
+    	"deviceName" : "USB-zyTemp",
+        "labels" : { "sensor_location": "office" }
+    }
+]

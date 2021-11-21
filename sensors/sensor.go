@@ -1,6 +1,6 @@
 package sensors
 
-/* define supported measurement types and generic interface to be implemented by each sensor
+/* define supported measurement types and generic interface to be implemented by each sensor device
  */
 type MeasurementType int
 

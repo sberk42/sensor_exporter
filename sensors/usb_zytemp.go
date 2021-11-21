@@ -1,5 +1,9 @@
 package sensors
 
+/* collector for USC Zytemp device, details how to get data see:
+ * https://hackaday.io/project/5301-reverse-engineering-a-low-cost-usb-co-monitor/log/17909-all-your-base-are-belong-to-us
+ */
+
 import (
 	"fmt"
 	"time"
@@ -136,6 +140,8 @@ func (s *sensorDevice) openDevice() error {
 		return fmt.Errorf("device %s not found", s.DeviceId())
 	}
 
+	log.Debugf("Device: %v", s.device)
+
 	err = s.device.SetAutoDetach(true)
 	if err != nil {
 		return err
@@ -159,6 +165,9 @@ func (s *sensorDevice) connectDevice() error {
 	if err != nil {
 		return err
 	}
+
+	log.Debugf("Interface: %v", s.inf)
+
 	_, err = s.device.Control(usb_ctrl_request_type, usb_ctrl_request, usb_ctrl_value, usb_ctrl_index, randomKey)
 	if err != nil {
 		return err
@@ -168,6 +177,8 @@ func (s *sensorDevice) connectDevice() error {
 	if err != nil {
 		return err
 	}
+
+	log.Debugf("Endpoint: %v", s.endPoint)
 
 	log.Infof("%s %s (%s) connect and ready to receive data", s.DeviceVendor(), s.DeviceName(), s.DeviceId())
 
@@ -207,6 +218,8 @@ func decrypt(data []byte) {
 
 func (s *sensorDevice) monitor() {
 
+	log.Debugf("starting monitoring sensor")
+
 	data := make([]byte, 8)
 	for {
 		err := s.connectDevice()
@@ -222,20 +235,16 @@ func (s *sensorDevice) monitor() {
 
 			if err != nil {
 				log.Warning(err)
-
 				s.err_io++
 			} else if count < 8 {
-				msg := fmt.Sprintf("only read %d bytes instead of 8", count)
-				log.Warning(msg)
-
+				log.Warningf("only read %d bytes instead of 8", count)
 				s.err_parse++
 			} else {
 				s.pkg_counter++
 				decrypt(data)
 
 				if data[4] != 0x0d || ((data[0]+data[1]+data[2])&0xff) != data[3] {
-					msg := "Checksum error"
-					log.Warning(msg)
+					log.Warning("Checksum error")
 
 					s.err_parse++
 				} else {
