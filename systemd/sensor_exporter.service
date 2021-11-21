@@ -1,0 +1,13 @@
+[Unit]
+Description=sensor_exporter
+Documentation=https://github.com/sberk42/sensor_exporter
+
+[Service]
+User=sensor_exporter
+Group=sensor_exporter
+ExecStart=/opt/sensor_exporter/sensor_exporter -listen-address 127.0.0.1:9102 -config-file /opt/sensor_exporter/sensor_exporter.json
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

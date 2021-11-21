@@ -130,6 +130,7 @@ func (s *sensorDevice) openDevice() error {
 	s.closeDevice()
 
 	s.context = gousb.NewContext()
+	// s.context.Debug(4)
 
 	var err error
 	s.device, err = s.context.OpenDeviceWithVIDPID(s.vId, s.pId)

@@ -1,0 +1,2 @@
+KERNEL=="hidraw*", ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="a052", GROUP="sensor_exporter", MODE="0660"
+SUBSYSTEM=="usb",  ATTRS{idVendor}=="04d9", ATTRS{idProduct}=="a052", GROUP="sensor_exporter", MODE="0660"

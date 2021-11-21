@@ -24,6 +24,7 @@ import (
 	"flag"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -173,8 +174,11 @@ func createMetricsDescs() {
 	}
 }
 
-func main() {
+func init() {
 	flag.Parse()
+
+	log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.TextFormatter{DisableTimestamp: true})
 
 	logLevel, err := log.ParseLevel(*flagLogLevel)
 	if err != nil {
@@ -182,7 +186,9 @@ func main() {
 	} else {
 		log.SetLevel(logLevel)
 	}
+}
 
+func main() {
 	// read metrics
 	jsonData, err := ioutil.ReadFile(*flagConfigFile)
 	if err != nil {
