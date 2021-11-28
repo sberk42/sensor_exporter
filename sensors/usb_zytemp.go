@@ -42,23 +42,23 @@ type sensorDevice struct {
 	co2      float64
 }
 
-func (s sensorDevice) DeviceType() string {
+func (s *sensorDevice) DeviceType() string {
 	return "USB"
 }
 
-func (s sensorDevice) DeviceId() string {
+func (s *sensorDevice) DeviceId() string {
 	return fmt.Sprintf("0x%s:0x%s", s.vId.String(), s.pId.String())
 }
 
-func (s sensorDevice) DeviceVendor() string {
+func (s *sensorDevice) DeviceVendor() string {
 	return s.manufacturer
 }
 
-func (s sensorDevice) DeviceName() string {
+func (s *sensorDevice) DeviceName() string {
 	return s.product
 }
 
-func (s sensorDevice) GetMeasurements() []Measurement {
+func (s *sensorDevice) GetMeasurements() []Measurement {
 
 	mes := [7]Measurement{}
 	count := 0
@@ -141,7 +141,7 @@ func (s *sensorDevice) openDevice() error {
 		return fmt.Errorf("device %s not found", s.DeviceId())
 	}
 
-	log.Debugf("Device: %v", s.device)
+	log.Debugf("zyTemp: Device: %v", s.device)
 
 	err = s.device.SetAutoDetach(true)
 	if err != nil {
@@ -167,7 +167,7 @@ func (s *sensorDevice) connectDevice() error {
 		return err
 	}
 
-	log.Debugf("Interface: %v", s.inf)
+	log.Debugf("zyTemp: Interface: %v", s.inf)
 
 	_, err = s.device.Control(usb_ctrl_request_type, usb_ctrl_request, usb_ctrl_value, usb_ctrl_index, randomKey)
 	if err != nil {
@@ -179,9 +179,9 @@ func (s *sensorDevice) connectDevice() error {
 		return err
 	}
 
-	log.Debugf("Endpoint: %v", s.endPoint)
+	log.Debugf("zyTemp: Endpoint: %v", s.endPoint)
 
-	log.Infof("%s %s (%s) connect and ready to receive data", s.DeviceVendor(), s.DeviceName(), s.DeviceId())
+	log.Infof("zyTemp: %s %s (%s) connect and ready to receive data", s.DeviceVendor(), s.DeviceName(), s.DeviceId())
 
 	return nil
 }
@@ -219,13 +219,13 @@ func decrypt(data []byte) {
 
 func (s *sensorDevice) monitor() {
 
-	log.Debugf("starting monitoring sensor")
+	log.Debugf("zyTemp: starting monitoring sensor")
 
 	data := make([]byte, 8)
 	for {
 		err := s.connectDevice()
 		if err != nil {
-			log.Errorf("error connecting %s - closing device and retrying after 20 secs", err)
+			log.Errorf("zyTemp: error connecting %s - closing device and retrying after 20 secs", err)
 
 			s.closeDevice()
 			s.err_connect++
@@ -235,17 +235,17 @@ func (s *sensorDevice) monitor() {
 			count, err := s.endPoint.Read(data)
 
 			if err != nil {
-				log.Warning(err)
+				log.Warningf("zyTemp: error reading: %s", err)
 				s.err_io++
 			} else if count < 8 {
-				log.Warningf("only read %d bytes instead of 8", count)
+				log.Warningf("zyTemp: only read %d bytes instead of 8", count)
 				s.err_parse++
 			} else {
 				s.pkg_counter++
 				decrypt(data)
 
 				if data[4] != 0x0d || ((data[0]+data[1]+data[2])&0xff) != data[3] {
-					log.Warning("Checksum error")
+					log.Warning("zyTemp: Checksum error")
 
 					s.err_parse++
 				} else {
@@ -281,7 +281,7 @@ func InitSensor_zytemp() (SensorDevice, error) {
 	err := s.openDevice()
 
 	if err != nil {
-		log.Errorf("Error decting zytemp sensor: %s", err)
+		log.Errorf("zyTemp: Error decting zytemp sensor: %s", err)
 		return nil, err
 	}
 

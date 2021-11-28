@@ -34,6 +34,7 @@ import (
 
 var (
 	flagConfigFile = flag.String("config-file", "sensor_exporter.json", "The JSON file with the metric definitions.")
+	flagRtl433Path = flag.String("rtl433-path", "rtl_433", "Path to rtl_433 binary.")
 	flagAddr       = flag.String("listen-address", "127.0.0.1:9043", "The address to listen on for HTTP requests.")
 	flagLogLevel   = flag.String("log-level", "info", "The log level {trace|debug|info|warn|error}")
 )
@@ -44,7 +45,7 @@ var metricLabels []string
 var configLabelIndex map[string]int
 
 type SensorCollector struct {
-	sensorDevice sensors.SensorDevice
+	sensorDevices []sensors.SensorDevice
 }
 
 // Config to add constant labels to
@@ -59,16 +60,17 @@ type sensorConfig struct {
 	idFields     []string
 }
 
-var sensorConfigs []sensorConfig
+var sensorConfigs []*sensorConfig
 
 // Implement prometheus Collector
-func (fc *SensorCollector) Describe(ch chan<- *prometheus.Desc) {
+func (sc *SensorCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, md := range metricDescs {
 		ch <- md
 	}
 }
 
 func labelsMatchConfig(sc *sensorConfig, labels []string) bool {
+
 	for i, l := range sc.idFields {
 		if l != "" && l != labels[i] {
 			return false
@@ -90,7 +92,7 @@ func createMeasurementLabels(dev sensors.SensorDevice, m *sensors.Measurement) [
 
 	// get labels from config
 	for _, sc := range sensorConfigs {
-		if labelsMatchConfig(&sc, labels) {
+		if labelsMatchConfig(sc, labels) {
 			// add static labels
 			for l, v := range sc.Labels {
 				labels[configLabelIndex[l]] = v
@@ -104,19 +106,21 @@ func createMeasurementLabels(dev sensors.SensorDevice, m *sensors.Measurement) [
 }
 
 func (sc *SensorCollector) Collect(ch chan<- prometheus.Metric) {
-	ms := sc.sensorDevice.GetMeasurements()
+	for _, sd := range sc.sensorDevices {
+		ms := sd.GetMeasurements()
 
-	for _, m := range ms {
-		md := metricDescs[m.Type]
-		vt := metricTypes[m.Type]
+		for _, m := range ms {
+			md := metricDescs[m.Type]
+			vt := metricTypes[m.Type]
 
-		labels := createMeasurementLabels(sc.sensorDevice, &m)
+			labels := createMeasurementLabels(sd, &m)
 
-		metric, err := prometheus.NewConstMetric(md, vt, m.Value, labels...)
-		if err != nil {
-			log.Errorf("Error creating metric %s", err)
-		} else {
-			ch <- metric
+			metric, err := prometheus.NewConstMetric(md, vt, m.Value, labels...)
+			if err != nil {
+				log.Errorf("Error creating metric %s", err)
+			} else {
+				ch <- metric
+			}
 		}
 	}
 }
@@ -139,10 +143,15 @@ func createMetricsDescs() {
 	configLabelIndex = make(map[string]int)
 
 	metricLabels = []string{"device_type", "device_id", "device_vendor", "device_name", "sensor_model", "sensor_id"}
+	for i, l := range metricLabels {
+		configLabelIndex[l] = i
+	}
 
 	// append constant labels from config and fill idFields
 	for _, sc := range sensorConfigs {
 		sc.idFields = []string{sc.DeviceType, sc.DeviceId, sc.DeviceVendor, sc.DeviceName, sc.SensorModel, sc.SensorId}
+
+		log.Debugf("init sc to %v", sc)
 
 		for lbl, _ := range sc.Labels {
 			if indexOf(metricLabels, lbl) == -1 {
@@ -202,17 +211,28 @@ func main() {
 
 	createMetricsDescs()
 
-	sensorDevice, err := sensors.InitSensor_zytemp()
+	var sds []sensors.SensorDevice
+	rtlDev, err := sensors.InitSensor_rtl433(*flagRtl433Path)
 	if err != nil {
 		log.Errorf("cannot init sensor: %s\n", err)
-		return
+	} else {
+		log.Infof("init done: %s, %s\n", rtlDev.DeviceType(), rtlDev.DeviceId())
+
+		sds = append(sds, rtlDev)
 	}
 
-	log.Infof("init done: %s, %s\n", sensorDevice.DeviceType(), sensorDevice.DeviceId())
+	zyTempDev, err := sensors.InitSensor_zytemp()
+	if err != nil {
+		log.Errorf("cannot init sensor: %s\n", err)
+	} else {
+		log.Infof("init done: %s, %s\n", zyTempDev.DeviceType(), zyTempDev.DeviceId())
 
-	zyCol := &SensorCollector{sensorDevice: sensorDevice}
+		sds = append(sds, zyTempDev)
+	}
 
-	prometheus.MustRegister(zyCol)
+	sensorsCol := &SensorCollector{sensorDevices: sds}
+
+	prometheus.MustRegister(sensorsCol)
 
 	http.Handle("/metrics", promhttp.Handler())
 	log.Infof("metrics available at http://%s/metrics\n", *flagAddr)
