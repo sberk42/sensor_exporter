@@ -119,7 +119,7 @@ func (s *sensorDevice) closeDevice() {
 	s.device = nil
 
 	if s.context != nil {
-		s.context.Close().Error()
+		s.context.Close()
 	}
 	s.context = nil
 }
