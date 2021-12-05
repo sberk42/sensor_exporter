@@ -18,6 +18,7 @@ instead of using multiple exporters with different metric names and labels, I wa
 - RTL_433 - install rtl_433 and connect a supported SDR
 
 # usage
+```
 Usage of ./sensor_exporter:
   -config-file string
         The JSON file with the metric definitions. (default "sensor_exporter.json")
@@ -27,4 +28,4 @@ Usage of ./sensor_exporter:
         The log level {trace|debug|info|warn|error} (default "info")
   -rtl433-path string
         Path to rtl_433 binary. (default "rtl_433")
-
+```
