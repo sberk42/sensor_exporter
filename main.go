@@ -53,13 +53,14 @@ type SensorCollector struct {
 
 // Config to add constant labels to
 type sensorConfig struct {
-	DeviceType   string            `json:"deviceType"`
-	DeviceId     string            `json:"deviceId"`
-	DeviceVendor string            `json:"deviceVendor"`
-	DeviceName   string            `json:"deviceName"`
-	SensorModel  string            `json:"sensorModel"`
-	SensorId     string            `json:"sensorId"`
-	Labels       map[string]string `json:"labels"`
+	DeviceType   string             `json:"deviceType"`
+	DeviceId     string             `json:"deviceId"`
+	DeviceVendor string             `json:"deviceVendor"`
+	DeviceName   string             `json:"deviceName"`
+	SensorModel  string             `json:"sensorModel"`
+	SensorId     string             `json:"sensorId"`
+	Labels       map[string]string  `json:"labels"`
+	Calibrations map[string]float64 `json:"calibrations"`
 	idFields     []string
 }
 
@@ -88,7 +89,7 @@ func labelsMatchConfig(sc *sensorConfig, labels []string) bool {
 	return true
 }
 
-func createMeasurementLabels(dev sensors.SensorDevice, m *sensors.Measurement) []string {
+func createMeasurementLabels(dev sensors.SensorDevice, m *sensors.Measurement) ([]string, *sensorConfig) {
 	// create static labels from device and measurement
 	labels := make([]string, len(metricLabels))
 	labels[0] = dev.DeviceType()
@@ -106,11 +107,11 @@ func createMeasurementLabels(dev sensors.SensorDevice, m *sensors.Measurement) [
 				labels[configLabelIndex[l]] = v
 			}
 
-			break
+			return labels, sc
 		}
 	}
 
-	return labels
+	return labels, nil
 }
 
 func (sc *SensorCollector) Collect(ch chan<- prometheus.Metric) {
@@ -121,9 +122,20 @@ func (sc *SensorCollector) Collect(ch chan<- prometheus.Metric) {
 			md := metricDescs[m.Type]
 			vt := metricTypes[m.Type]
 
-			labels := createMeasurementLabels(sd, &m)
+			labels, sdConfig := createMeasurementLabels(sd, &m)
 
-			metric, err := prometheus.NewConstMetric(md, vt, m.Value, labels...)
+			// if we have a sensor config check for calibrations
+			var offset float64 = 0
+			if sdConfig != nil {
+				md := sensors.GetMeasurementTypeDetails(m.Type)
+				cal, ok := sdConfig.Calibrations[md.MetricName]
+				if ok {
+					log.Debugf("applying calibration offset %f to %s from %s: %s_%s", cal, md.MetricName, sd.DeviceName(), m.SensorModel, m.SensorId)
+					offset = cal
+				}
+			}
+
+			metric, err := prometheus.NewConstMetric(md, vt, m.Value+offset, labels...)
 			if err != nil {
 				log.Errorf("Error creating metric %s", err)
 			} else {

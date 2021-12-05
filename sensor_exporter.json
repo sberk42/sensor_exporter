@@ -21,6 +21,10 @@
             "labels": {
                 "sensor_location": "Bed room",
                 "sensor_placement": "Indoor"
+            },
+            "calibrations": {
+                "temperature_c": -0.4,
+                "humidity_percent": -4
             }
         },
         {
@@ -37,6 +41,10 @@
             "labels": {
                 "sensor_location": "Terrace",
                 "sensor_placement": "Outdoor"
+            },
+            "calibrations": {
+                "temperature_c": -0.4,
+                "humidity_percent": -4
             }
         },
         {
@@ -45,6 +53,10 @@
             "labels": {
                 "sensor_location": "Balcony",
                 "sensor_placement": "Outdoor"
+            },
+            "calibrations": {
+                "temperature_c": -0.4,
+                "humidity_percent": -4
             }
         },
         {
