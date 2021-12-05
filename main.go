@@ -153,7 +153,7 @@ func createMetricsDescs() {
 
 		log.Debugf("init sc to %v", sc)
 
-		for lbl, _ := range sc.Labels {
+		for lbl := range sc.Labels {
 			if indexOf(metricLabels, lbl) == -1 {
 				configLabelIndex[lbl] = len(metricLabels)
 				metricLabels = append(metricLabels, lbl)

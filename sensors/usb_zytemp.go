@@ -1,7 +1,7 @@
 package sensors
 
 /* collector for USC Zytemp device, details how to get data see:
- * https://hackaday.io/project/5301-reverse-engineering-a-low-cost-usb-co-monitor/log/17909-all-your-base-are-belong-to-us
+ * https://hackaday.io/project/5301-reverse-engineering-a-low-cost-usb-co-monitor
  */
 
 import (
