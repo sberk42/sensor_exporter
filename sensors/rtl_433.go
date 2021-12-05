@@ -7,6 +7,7 @@ package sensors
 import (
 	"bufio"
 	"encoding/json"
+	"flag"
 	"fmt"
 	"io"
 	"math"
@@ -374,6 +375,10 @@ func (r *rtl433) run_RTL433(init bool) error {
 	go r.readStderr()
 
 	return nil
+}
+
+func InitFlags_rtl433() {
+	flag.StringVar(&FlagRtl433Path, "rtl433-path", "rtl_433", "Path to rtl_433 binary.")
 }
 
 func InitSensor_rtl433(cfg *DeviceConfig) (SensorDevice, error) {

@@ -269,6 +269,10 @@ func (s *sensorDevice) monitor() {
 	}
 }
 
+func InitFlags_zytemp() {
+	// no flags yet
+}
+
 func InitSensor_zytemp(cfg *DeviceConfig) (SensorDevice, error) {
 
 	// check that device exists

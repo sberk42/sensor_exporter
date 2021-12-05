@@ -13,11 +13,12 @@ type SensorDevice interface {
 type DeviceConfig map[string]string
 
 type SupportedDevice struct {
-	Description  string
-	InitFunction func(*DeviceConfig) (SensorDevice, error)
+	Description       string
+	InitFlagsFunction func()
+	InitFunction      func(*DeviceConfig) (SensorDevice, error)
 }
 
 var SupportedSensorDevices = map[string]*SupportedDevice{
-	"usb_zytemp": {"USB CO2 sensor: Holtek Semiconductor, Inc. USB-zyTemp", InitSensor_zytemp},
-	"rtl_433":    {"Generic wrapper using rtl_433 to collect measurements", InitSensor_rtl433},
+	"usb_zytemp": {"USB CO2 sensor: Holtek Semiconductor, Inc. USB-zyTemp", InitFlags_zytemp, InitSensor_zytemp},
+	"rtl_433":    {"Generic wrapper using rtl_433 to collect measurements", InitFlags_rtl433, InitSensor_rtl433},
 }

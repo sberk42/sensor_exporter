@@ -205,7 +205,9 @@ func createMetricsDescs() {
 
 func init() {
 	// add sensor specific flags
-	flag.StringVar(&sensors.FlagRtl433Path, "rtl433-path", "rtl_433", "Path to rtl_433 binary.")
+	for _, sensorDev := range sensors.SupportedSensorDevices {
+		sensorDev.InitFlagsFunction()
+	}
 
 	flag.Parse()
 
