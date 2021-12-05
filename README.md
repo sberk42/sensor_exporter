@@ -9,8 +9,8 @@ instead of using multiple exporters with different metric names and labels, I wa
 - RTL 433MHz weather station sensors (details: https://triq.org/rtl_433)
 
 # project status
-- retrieval and exporter works for the devices I own (sample: [metrics_sample.txt]{metrics_sample.txt})
-- initial configuration of sensor labels in json possible (sample: [sensor_exporter.json]{sensor_exporter.json})
+- retrieval and exporter works for the devices I own (sample: [metrics_sample.txt](metrics_sample.txt))
+- initial configuration of sensor labels in json possible (sample: [sensor_exporter.json](sensor_exporter.json))
 - next steps: improve device/sensor specific config (e.g. calibration, ignoring RTL sensors), documentation, ...
 
 # installation
