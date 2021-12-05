@@ -214,18 +214,18 @@ func main() {
 	var sds []sensors.SensorDevice
 	rtlDev, err := sensors.InitSensor_rtl433(*flagRtl433Path)
 	if err != nil {
-		log.Errorf("cannot init sensor: %s\n", err)
+		log.Errorf("cannot init sensor: %s", err)
 	} else {
-		log.Infof("init done: %s, %s\n", rtlDev.DeviceType(), rtlDev.DeviceId())
+		log.Infof("init done: %s, %s", rtlDev.DeviceType(), rtlDev.DeviceId())
 
 		sds = append(sds, rtlDev)
 	}
 
 	zyTempDev, err := sensors.InitSensor_zytemp()
 	if err != nil {
-		log.Errorf("cannot init sensor: %s\n", err)
+		log.Errorf("cannot init sensor: %s", err)
 	} else {
-		log.Infof("init done: %s, %s\n", zyTempDev.DeviceType(), zyTempDev.DeviceId())
+		log.Infof("init done: %s, %s", zyTempDev.DeviceType(), zyTempDev.DeviceId())
 
 		sds = append(sds, zyTempDev)
 	}
@@ -235,7 +235,7 @@ func main() {
 	prometheus.MustRegister(sensorsCol)
 
 	http.Handle("/metrics", promhttp.Handler())
-	log.Infof("metrics available at http://%s/metrics\n", *flagAddr)
+	log.Infof("metrics available at http://%s/metrics", *flagAddr)
 
 	log.Fatal(http.ListenAndServe(*flagAddr, nil))
 }
