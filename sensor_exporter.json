@@ -2,10 +2,10 @@
     {
         "deviceName": "USB-zyTemp",
         "labels": {
-	    "sensor_model": "Airco2ntrol Coach",
-	    "sensor_id": "1",
+            "sensor_model": "Airco2ntrol Coach",
+            "sensor_id": "1",
             "sensor_location": "Office",
-	    "sensor_placement": "Indoor"
+            "sensor_placement": "Indoor"
         }
     },
     {
@@ -13,7 +13,7 @@
         "sensorId": "3_195",
         "labels": {
             "sensor_location": "Bed room",
-	    "sensor_placement": "Indoor"
+            "sensor_placement": "Indoor"
         }
     },
     {
@@ -21,7 +21,7 @@
         "sensorId": "1_95",
         "labels": {
             "sensor_location": "Unknown",
-	    "sensor_placement": "Indoor"
+            "sensor_placement": "Indoor"
         }
     },
     {
@@ -29,7 +29,7 @@
         "sensorId": "1_150",
         "labels": {
             "sensor_location": "Terrace",
-	    "sensor_placement": "Outdoor"
+            "sensor_placement": "Outdoor"
         }
     },
     {
@@ -37,7 +37,7 @@
         "sensorId": "2_93",
         "labels": {
             "sensor_location": "Balcony",
-	    "sensor_placement": "Outdoor"
+            "sensor_placement": "Outdoor"
         }
     },
     {
@@ -45,14 +45,14 @@
         "sensorId": "1_203",
         "labels": {
             "sensor_location": "Garden",
-	    "sensor_placement": "Outdoor"
+            "sensor_placement": "Outdoor"
         }
     },
     {
-	"deviceType": "RTL_433",
+        "deviceType": "RTL_433",
         "labels": {
             "sensor_location": "Unknown",
-	    "sensor_placement": "Outdoor"
+            "sensor_placement": "Outdoor"
         }
     }
 ]

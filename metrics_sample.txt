@@ -1,0 +1,17 @@
+# HELP sensor_measurement_battery_ok battery OK
+# TYPE sensor_measurement_battery_ok gauge
+sensor_measurement_battery_ok{device_id="Generic RTL2832U OEM",device_name="Rafael Micro R820T tuner",device_type="RTL_433",device_vendor="Realtek, RTL2838UHIDIR, SN: 00000001",sensor_id="1_10",sensor_location="Unknown",sensor_model="Hideki-TS04",sensor_placement="Outdoor"} 1
+sensor_measurement_battery_ok{device_id="Generic RTL2832U OEM",device_name="Rafael Micro R820T tuner",device_type="RTL_433",device_vendor="Realtek, RTL2838UHIDIR, SN: 00000001",sensor_id="1_95",sensor_location="Unknown",sensor_model="Oregon-THGR122N",sensor_placement="Indoor"} 1
+# HELP sensor_measurement_co2_ppm co2 concentration in ppm
+# TYPE sensor_measurement_co2_ppm gauge
+sensor_measurement_co2_ppm{device_id="0x04d9:0xa052",device_name="USB-zyTemp",device_type="USB",device_vendor="Holtek",sensor_id="1",sensor_location="Office",sensor_model="Airco2ntrol Coach",sensor_placement="Indoor"} 1081
+# HELP sensor_measurement_humidity_percent humidity in %
+# TYPE sensor_measurement_humidity_percent gauge
+sensor_measurement_humidity_percent{device_id="0x04d9:0xa052",device_name="USB-zyTemp",device_type="USB",device_vendor="Holtek",sensor_id="1",sensor_location="Office",sensor_model="Airco2ntrol Coach",sensor_placement="Indoor"} 47.47
+sensor_measurement_humidity_percent{device_id="Generic RTL2832U OEM",device_name="Rafael Micro R820T tuner",device_type="RTL_433",device_vendor="Realtek, RTL2838UHIDIR, SN: 00000001",sensor_id="1_10",sensor_location="Unknown",sensor_model="Hideki-TS04",sensor_placement="Outdoor"} 24
+sensor_measurement_humidity_percent{device_id="Generic RTL2832U OEM",device_name="Rafael Micro R820T tuner",device_type="RTL_433",device_vendor="Realtek, RTL2838UHIDIR, SN: 00000001",sensor_id="1_95",sensor_location="Unknown",sensor_model="Oregon-THGR122N",sensor_placement="Indoor"} 43
+# HELP sensor_measurement_temperature_c temperature in C
+# TYPE sensor_measurement_temperature_c gauge
+sensor_measurement_temperature_c{device_id="0x04d9:0xa052",device_name="USB-zyTemp",device_type="USB",device_vendor="Holtek",sensor_id="1",sensor_location="Office",sensor_model="Airco2ntrol Coach",sensor_placement="Indoor"} 24.100000000000023
+sensor_measurement_temperature_c{device_id="Generic RTL2832U OEM",device_name="Rafael Micro R820T tuner",device_type="RTL_433",device_vendor="Realtek, RTL2838UHIDIR, SN: 00000001",sensor_id="1_10",sensor_location="Unknown",sensor_model="Hideki-TS04",sensor_placement="Outdoor"} 5.6
+sensor_measurement_temperature_c{device_id="Generic RTL2832U OEM",device_name="Rafael Micro R820T tuner",device_type="RTL_433",device_vendor="Realtek, RTL2838UHIDIR, SN: 00000001",sensor_id="1_95",sensor_location="Unknown",sensor_model="Oregon-THGR122N",sensor_placement="Indoor"} 19.5
