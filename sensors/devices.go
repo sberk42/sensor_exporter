@@ -10,9 +10,11 @@ type SensorDevice interface {
 	GetMeasurements() []Measurement
 }
 
+type DeviceConfig map[string]string
+
 type SupportedDevice struct {
 	Description  string
-	InitFunction func() (SensorDevice, error)
+	InitFunction func(*DeviceConfig) (SensorDevice, error)
 }
 
 var SupportedSensorDevices = map[string]*SupportedDevice{

@@ -63,7 +63,12 @@ type sensorConfig struct {
 	idFields     []string
 }
 
-var sensorConfigs []*sensorConfig
+type exporterConfig struct {
+	DeviceConfigs map[string]*sensors.DeviceConfig `json:"device_configs"`
+	SensorConfigs []*sensorConfig                  `json:"sensor_configs"`
+}
+
+var config *exporterConfig
 
 // Implement prometheus Collector
 func (sc *SensorCollector) Describe(ch chan<- *prometheus.Desc) {
@@ -94,7 +99,7 @@ func createMeasurementLabels(dev sensors.SensorDevice, m *sensors.Measurement) [
 	labels[5] = m.SensorId
 
 	// get labels from config
-	for _, sc := range sensorConfigs {
+	for _, sc := range config.SensorConfigs {
 		if labelsMatchConfig(sc, labels) {
 			// add static labels
 			for l, v := range sc.Labels {
@@ -151,7 +156,7 @@ func createMetricsDescs() {
 	}
 
 	// append constant labels from config and fill idFields
-	for _, sc := range sensorConfigs {
+	for _, sc := range config.SensorConfigs {
 		sc.idFields = []string{sc.DeviceType, sc.DeviceId, sc.DeviceVendor, sc.DeviceName, sc.SensorModel, sc.SensorId}
 
 		log.Debugf("init sc to %v", sc)
@@ -220,10 +225,11 @@ func main() {
 		log.Fatalf("error reading config file:", err)
 	}
 
-	err = json.Unmarshal(jsonData, &sensorConfigs)
+	err = json.Unmarshal(jsonData, &config)
 	if err != nil {
 		log.Fatalf("error parsing JSON:", err)
 	}
+	log.Debugf("read config: %v", config)
 
 	createMetricsDescs()
 
@@ -244,7 +250,7 @@ func main() {
 			log.Fatalf("Unknown sensor device '%s' - use list-devices to check supported devices", id)
 		}
 
-		dev, err := sensorDev.InitFunction()
+		dev, err := sensorDev.InitFunction(config.DeviceConfigs[id])
 		if err != nil {
 			log.Errorf("cannot init sensor: %s", err)
 		} else {

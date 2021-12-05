@@ -371,7 +371,7 @@ func (r *rtl433) run_RTL433(init bool) error {
 	return nil
 }
 
-func InitSensor_rtl433() (SensorDevice, error) {
+func InitSensor_rtl433(cfg *DeviceConfig) (SensorDevice, error) {
 
 	// check that device exists
 	r := &rtl433{rtl433_path: FlagRtl433Path, deviceId: "<unknown>", manufacturer: "<unknown>", deviceName: "<unknown>"}

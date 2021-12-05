@@ -269,7 +269,7 @@ func (s *sensorDevice) monitor() {
 	}
 }
 
-func InitSensor_zytemp() (SensorDevice, error) {
+func InitSensor_zytemp(cfg *DeviceConfig) (SensorDevice, error) {
 
 	// check that device exists
 	s := &sensorDevice{vId: default_vid, pId: default_pid,
