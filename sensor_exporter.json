@@ -1,7 +1,9 @@
 {
     "device_configs": {
         "usb_zytemp": {},
-        "rtl_433": {}
+        "rtl_433": {
+            "additional_args": ""
+        }
     },
     "sensor_configs": [
         {

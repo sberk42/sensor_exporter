@@ -24,10 +24,11 @@ import (
 var FlagRtl433Path string
 
 type rtl433 struct {
-	rtl433_path  string
-	deviceId     string
-	manufacturer string
-	deviceName   string
+	rtl433_path    string
+	additionalArgs []string
+	deviceId       string
+	manufacturer   string
+	deviceName     string
 
 	pkg_counter float64
 	err_connect float64
@@ -266,7 +267,11 @@ func (r *rtl433) run_RTL433(init bool) error {
 
 	log.Debugf("RTL433: runnning: %s", r.rtl433_path)
 
-	r.cmd = exec.Command(r.rtl433_path, "-v", "-C", "si", "-F", "json")
+	args := []string{"-v", "-C", "si", "-F", "json"}
+	args = append(args, r.additionalArgs...)
+
+	log.Debugf("RTL433: starting %s with args: %v", r.rtl433_path, args)
+	r.cmd = exec.Command(r.rtl433_path, args...)
 
 	// make sure rtl is killed if we get killed
 	// https://stackoverflow.com/questions/34095254/panic-in-other-goroutine-not-stopping-child-process/34095869#34095869
@@ -373,8 +378,13 @@ func (r *rtl433) run_RTL433(init bool) error {
 
 func InitSensor_rtl433(cfg *DeviceConfig) (SensorDevice, error) {
 
+	var addArgs []string
+	if cfg != nil && (*cfg)["additional_args"] != "" {
+		addArgs = strings.Split((*cfg)["additional_args"], " ")
+	}
+
 	// check that device exists
-	r := &rtl433{rtl433_path: FlagRtl433Path, deviceId: "<unknown>", manufacturer: "<unknown>", deviceName: "<unknown>"}
+	r := &rtl433{rtl433_path: FlagRtl433Path, additionalArgs: addArgs, deviceId: "<unknown>", manufacturer: "<unknown>", deviceName: "<unknown>"}
 
 	err := r.run_RTL433(true)
 
