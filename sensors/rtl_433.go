@@ -21,6 +21,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+var FlagRtl433Path string
+
 type rtl433 struct {
 	rtl433_path  string
 	deviceId     string
@@ -369,10 +371,10 @@ func (r *rtl433) run_RTL433(init bool) error {
 	return nil
 }
 
-func InitSensor_rtl433(rtl433_path string) (SensorDevice, error) {
+func InitSensor_rtl433() (SensorDevice, error) {
 
 	// check that device exists
-	r := &rtl433{rtl433_path: rtl433_path, deviceId: "<unknown>", manufacturer: "<unknown>", deviceName: "<unknown>"}
+	r := &rtl433{rtl433_path: FlagRtl433Path, deviceId: "<unknown>", manufacturer: "<unknown>", deviceName: "<unknown>"}
 
 	err := r.run_RTL433(true)
 

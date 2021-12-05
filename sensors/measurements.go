@@ -1,6 +1,6 @@
 package sensors
 
-/* define supported measurement types and generic interface to be implemented by each sensor device
+/* define supported measurement types
  */
 type MeasurementType int
 
@@ -41,14 +41,6 @@ type Measurement struct {
 	Value       float64
 	SensorModel string // model of sensor to use as label - in case multiple sensors report the same measurement
 	SensorId    string // id of sensor to use as label - in case multiple sensors report the same measurement
-}
-
-type SensorDevice interface {
-	DeviceType() string
-	DeviceId() string
-	DeviceVendor() string
-	DeviceName() string
-	GetMeasurements() []Measurement
 }
 
 /* now define for each MeasurementType details to be used for creating a prometheus metric for it

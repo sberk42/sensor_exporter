@@ -22,6 +22,10 @@ instead of using multiple exporters with different metric names and labels, I wa
 Usage of ./sensor_exporter:
   -config-file string
         The JSON file with the metric definitions. (default "sensor_exporter.json")
+  -devices string
+        Comma seperated list of device IDs to initialize (see list-devices for known IDs) (default "ALL")
+  -list-devices
+        List supported devices and exit.
   -listen-address string
         The address to listen on for HTTP requests. (default "127.0.0.1:9043")
   -log-level string

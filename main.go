@@ -22,9 +22,11 @@ package main
 import (
 	"encoding/json"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"net/http"
 	"os"
+	"strings"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -33,8 +35,9 @@ import (
 )
 
 var (
+	flagListDevs   = flag.Bool("list-devices", false, "List supported devices and exit.")
+	flagDevices    = flag.String("devices", "ALL", "Comma seperated list of device IDs to initialize (see list-devices for known IDs)")
 	flagConfigFile = flag.String("config-file", "sensor_exporter.json", "The JSON file with the metric definitions.")
-	flagRtl433Path = flag.String("rtl433-path", "rtl_433", "Path to rtl_433 binary.")
 	flagAddr       = flag.String("listen-address", "127.0.0.1:9043", "The address to listen on for HTTP requests.")
 	flagLogLevel   = flag.String("log-level", "info", "The log level {trace|debug|info|warn|error}")
 )
@@ -184,20 +187,33 @@ func createMetricsDescs() {
 }
 
 func init() {
+	// add sensor specific flags
+	flag.StringVar(&sensors.FlagRtl433Path, "rtl433-path", "rtl_433", "Path to rtl_433 binary.")
+
 	flag.Parse()
 
+	// init log level
 	log.SetOutput(os.Stdout)
 	log.SetFormatter(&log.TextFormatter{DisableTimestamp: true})
 
 	logLevel, err := log.ParseLevel(*flagLogLevel)
 	if err != nil {
-		log.Errorf("error parsing log level:", err)
+		log.Fatalf("error parsing log level:", err)
 	} else {
 		log.SetLevel(logLevel)
 	}
 }
 
 func main() {
+	if *flagListDevs {
+		fmt.Println("Supported Devices:")
+		for id, dev := range sensors.SupportedSensorDevices {
+			fmt.Printf("  %s: %s\n", id, dev.Description)
+		}
+
+		return
+	}
+
 	// read metrics
 	jsonData, err := ioutil.ReadFile(*flagConfigFile)
 	if err != nil {
@@ -211,24 +227,39 @@ func main() {
 
 	createMetricsDescs()
 
+	// init sensors
+	sIDs := strings.Split(*flagDevices, ",")
+	if sIDs[0] == "ALL" {
+		sIDs = make([]string, 0)
+		for id := range sensors.SupportedSensorDevices {
+			sIDs = append(sIDs, id)
+		}
+	}
+	log.Debugf("initializing devices: %v", sIDs)
+
 	var sds []sensors.SensorDevice
-	rtlDev, err := sensors.InitSensor_rtl433(*flagRtl433Path)
-	if err != nil {
-		log.Errorf("cannot init sensor: %s", err)
-	} else {
-		log.Infof("init done: %s, %s", rtlDev.DeviceType(), rtlDev.DeviceId())
+	for _, id := range sIDs {
+		sensorDev, ok := sensors.SupportedSensorDevices[id]
+		if !ok {
+			log.Fatalf("Unknown sensor device '%s' - use list-devices to check supported devices", id)
+		}
 
-		sds = append(sds, rtlDev)
+		dev, err := sensorDev.InitFunction()
+		if err != nil {
+			log.Errorf("cannot init sensor: %s", err)
+		} else {
+			log.Infof("init done: %s, %s", dev.DeviceType(), dev.DeviceId())
+
+			sds = append(sds, dev)
+		}
 	}
 
-	zyTempDev, err := sensors.InitSensor_zytemp()
-	if err != nil {
-		log.Errorf("cannot init sensor: %s", err)
-	} else {
-		log.Infof("init done: %s, %s", zyTempDev.DeviceType(), zyTempDev.DeviceId())
-
-		sds = append(sds, zyTempDev)
+	if len(sds) == 0 {
+		log.Fatal("Failed to init any sensor device")
 	}
+
+	// register collected sensors
+	log.Infof("Creating collector for %d successfull initialized sensor devices", len(sds))
 
 	sensorsCol := &SensorCollector{sensorDevices: sds}
 
