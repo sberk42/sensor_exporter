@@ -17,6 +17,14 @@
         }
     },
     {
+        "sensorModel": "Oregon-THGR122N",
+        "sensorId": "1_95",
+        "labels": {
+            "sensor_location": "Unknown",
+	    "sensor_placement": "Indoor"
+        }
+    },
+    {
         "sensorModel": "Ambientweather-F007TH",
         "sensorId": "1_150",
         "labels": {
