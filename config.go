@@ -20,6 +20,7 @@ type SensorConfig struct {
 	SensorId     string             `json:"sensorId"`
 	Labels       map[string]string  `json:"labels"`
 	Calibrations map[string]float64 `json:"calibrations"`
+	Ignore       bool               `json:"ignore"`
 	idFields     []string
 }
 

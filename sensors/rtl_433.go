@@ -112,7 +112,13 @@ func (r *rtl433) GetMeasurements() []Measurement {
 					}
 
 					model := asString(sd["model"])
-					id := asString(sd["channel"]) + "_" + asString(sd["id"])
+
+					id := ""
+					if sd["channel"] != nil {
+						id = asString(sd["channel"]) + "_"
+					}
+
+					id += asString(sd["id"])
 
 					mes[count] = Measurement{mt, f, model, id}
 					count++

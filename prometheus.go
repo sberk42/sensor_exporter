@@ -76,6 +76,11 @@ func (sc *SensorCollector) Collect(ch chan<- prometheus.Metric) {
 			// if we have a sensor config check for calibrations
 			var offset float64 = 0
 			if sdConfig != nil {
+				if sdConfig.Ignore {
+					log.Debugf("PROM: ignored measurement from %s: %s_%s", sd.DeviceName(), m.SensorModel, m.SensorId)
+					continue
+				}
+
 				md := sensors.GetMeasurementTypeDetails(m.Type)
 				cal, ok := sdConfig.Calibrations[md.MetricName]
 				if ok {

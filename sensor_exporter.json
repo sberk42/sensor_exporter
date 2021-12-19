@@ -16,6 +16,21 @@
             }
         },
         {
+            "sensorModel": "Hideki-TS04",
+            "sensorId": "1_10",
+            "ignore": true
+        },
+        {
+            "sensorModel": "GT-WT02",
+            "sensorId": "1_227",
+            "ignore": true
+        },
+        {
+            "sensorModel": "Toyota",
+            "sensorId": "fb640d41",
+            "ignore": true
+        },
+        {
             "sensorModel": "Ambientweather-F007TH",
             "sensorId": "3_195",
             "labels": {
