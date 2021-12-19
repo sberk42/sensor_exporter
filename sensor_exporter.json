@@ -31,6 +31,11 @@
             "ignore": true
         },
         {
+            "sensorModel": "Oregon-THGR122N",
+            "sensorId": "1_95",
+            "ignore": true
+        },
+        {
             "sensorModel": "Ambientweather-F007TH",
             "sensorId": "3_195",
             "labels": {
@@ -40,14 +45,6 @@
             "calibrations": {
                 "temperature_c": -0.4,
                 "humidity_percent": -4
-            }
-        },
-        {
-            "sensorModel": "Oregon-THGR122N",
-            "sensorId": "1_95",
-            "labels": {
-                "sensor_location": "Unknown",
-                "sensor_placement": "Indoor"
             }
         },
         {
