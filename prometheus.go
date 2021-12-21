@@ -63,7 +63,26 @@ func createMeasurementLabels(dev sensors.SensorDevice, m *sensors.Measurement) (
 	return labels, nil
 }
 
+func createConfigLabels(sc *SensorConfig) []string {
+	// create static labels from device and measurement
+	labels := make([]string, len(metricLabels))
+	labels[0] = sc.DeviceType
+	labels[1] = sc.DeviceId
+	labels[2] = sc.DeviceVendor
+	labels[3] = sc.DeviceName
+	labels[4] = sc.SensorModel
+	labels[5] = sc.SensorId
+
+	// add static labels
+	for l, v := range sc.Labels {
+		labels[configLabelIndex[l]] = v
+	}
+
+	return labels
+}
+
 func (sc *SensorCollector) Collect(ch chan<- prometheus.Metric) {
+
 	for _, sd := range sc.sensorDevices {
 		ms := sd.GetMeasurements()
 
@@ -73,11 +92,11 @@ func (sc *SensorCollector) Collect(ch chan<- prometheus.Metric) {
 
 			labels, sdConfig := createMeasurementLabels(sd, &m)
 
-			// if we have a sensor config check for calibrations
-			var offset float64 = 0
+			value := m.Value
 			if sdConfig != nil {
 				if sdConfig.Ignore {
 					log.Debugf("PROM: ignored measurement from %s: %s_%s", sd.DeviceName(), m.SensorModel, m.SensorId)
+					sdConfig.IgnoreCount++
 					continue
 				}
 
@@ -85,11 +104,28 @@ func (sc *SensorCollector) Collect(ch chan<- prometheus.Metric) {
 				cal, ok := sdConfig.Calibrations[md.MetricName]
 				if ok {
 					log.Debugf("PROM: applying calibration offset %f to %s from %s: %s_%s", cal, md.MetricName, sd.DeviceName(), m.SensorModel, m.SensorId)
-					offset = cal
+					value += cal
 				}
 			}
 
-			metric, err := prometheus.NewConstMetric(md, vt, m.Value+offset, labels...)
+			metric, err := prometheus.NewConstMetric(md, vt, value, labels...)
+			if err != nil {
+				log.Errorf("Error creating metric %s", err)
+			} else {
+				ch <- metric
+			}
+		}
+	}
+
+	// now report ignored values
+	md := metricDescs[sensors.IGNORED_COUNTER]
+	vt := metricTypes[sensors.IGNORED_COUNTER]
+	for _, sc := range config.SensorConfigs {
+		if sc.IgnoreCount > 0 {
+
+			labels := createConfigLabels(sc)
+
+			metric, err := prometheus.NewConstMetric(md, vt, float64(sc.IgnoreCount), labels...)
 			if err != nil {
 				log.Errorf("Error creating metric %s", err)
 			} else {

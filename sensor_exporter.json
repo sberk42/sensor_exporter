@@ -27,7 +27,10 @@
         },
         {
             "sensorModel": "Toyota",
-            "sensorId": "fb640d41",
+            "ignore": true
+        },
+        {
+            "sensorModel": "Renault",
             "ignore": true
         },
         {

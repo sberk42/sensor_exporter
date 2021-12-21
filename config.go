@@ -21,6 +21,7 @@ type SensorConfig struct {
 	Labels       map[string]string  `json:"labels"`
 	Calibrations map[string]float64 `json:"calibrations"`
 	Ignore       bool               `json:"ignore"`
+	IgnoreCount  int
 	idFields     []string
 }
 

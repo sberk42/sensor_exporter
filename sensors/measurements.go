@@ -29,6 +29,7 @@ const (
 
 	// couter types
 	VALUES_COUNTER
+	IGNORED_COUNTER
 
 	// types for error counters
 	ERRORS_CONNECT
@@ -80,10 +81,11 @@ var mt_details = map[MeasurementType]MeasurementTypeDetails{
 	WIND_MAX_M_S: {"wind_max_m_s", "wind max in m/s", GAUGE},
 	WIND_DIR_DEG: {"wind_dir_deg", "wind direction in degree", GAUGE},
 
-	VALUES_COUNTER: {"values_counter", "values received from sensor", COUNTER},
-	ERRORS_CONNECT: {"errors_connect_counter", "errors connecting to sensor", COUNTER},
-	ERRORS_IO:      {"errors_io_counter", "errors receiving data from sensor", COUNTER},
-	ERRORS_PARSE:   {"errors_parse_counter", "errors parsing data from sensor", COUNTER},
+	VALUES_COUNTER:  {"values_counter", "values received from sensor", COUNTER},
+	IGNORED_COUNTER: {"ignored_counter", "ignored values from sensor", COUNTER},
+	ERRORS_CONNECT:  {"errors_connect_counter", "errors connecting to sensor", COUNTER},
+	ERRORS_IO:       {"errors_io_counter", "errors receiving data from sensor", COUNTER},
+	ERRORS_PARSE:    {"errors_parse_counter", "errors parsing data from sensor", COUNTER},
 }
 
 func GetAllMeasurementTypes() []MeasurementType {
