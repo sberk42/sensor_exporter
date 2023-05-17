@@ -32,6 +32,7 @@ jobs:
         github_token: ${{ secrets.GITHUB_TOKEN }}
         goos: ${{ matrix.goos }}
         goarch: ${{ matrix.goarch }}
+        pre_command: "go install github.com/google/gousb"
         release_tag: latest
         overwrite: true
         extra_files: LICENSE README.md sensor_exporter.json
