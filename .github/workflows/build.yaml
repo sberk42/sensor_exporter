@@ -24,7 +24,7 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     - name: Install libusb-dev
-      run: sudo apt-get install -y pkg-config libusb-1.0-0-dev
+      run: sudo apt-get install -y --reinstall pkg-config cmake-data libusb-1.0-0-dev
     - uses: wangyoucao577/go-release-action@v1
       with:
         github_token: ${{ secrets.GITHUB_TOKEN }}
