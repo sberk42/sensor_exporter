@@ -26,11 +26,19 @@
             "ignore": true
         },
         {
+            "sensorModel": "Hyundai-VDO",
+            "ignore": true
+        },
+        {
             "sensorModel": "Toyota",
             "ignore": true
         },
         {
             "sensorModel": "Renault",
+            "ignore": true
+        },
+        {
+            "sensorModel": "Citroen",
             "ignore": true
         },
         {
@@ -72,6 +80,14 @@
             "calibrations": {
                 "temperature_c": -0.4,
                 "humidity_percent": -4
+            }
+        },
+	{
+            "sensorModel": "Nexus-TH",
+            "sensorId": "1_138",
+            "labels": {
+                "sensor_location": "Balcony",
+                "sensor_placement": "Outdoor"
             }
         },
         {
